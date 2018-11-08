@@ -5,7 +5,7 @@ d3.queue()
     .defer(d3.json, "keys.json")
     .await(ready);
 
-var intervals = [5]
+var intervals = [5,10,30]
     
 var formattedKeys
 var formattedCensus 
