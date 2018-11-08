@@ -4,7 +4,7 @@ var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
     center: [-73.998617,40.728922], // starting position
-    zoom: 10 // starting zoom
+    zoom: 14 // starting zoom
 });
 
 d3.queue()
