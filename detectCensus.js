@@ -3,7 +3,7 @@ d3.queue()
     .defer(d3.json, "keys.json")
     .await(ready);
 
-var intervals = [3,5,10]
+var intervals = [5]
     
 var formattedKeys
 var formattedCensus 
@@ -108,7 +108,7 @@ function getCensusGeo(result, map,intervals){
         censusGeos.push(ids)
     }
     var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
-    map.setFilter("tracts_highlight", filter);
+  //  map.setFilter("tracts_highlight", filter);
     getCensusData(censusGeos)
 }
 function getCensusData(geoids){
