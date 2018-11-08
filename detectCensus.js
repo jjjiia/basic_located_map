@@ -3,17 +3,19 @@
 d3.queue()
     //.defer(d3.csv, "R11901662_SL140.csv")
     .defer(d3.json, "keys.json")
+    .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [5,10,30]
+var intervals = [5]
     
 var formattedKeys
-var formattedCensus 
+var keysInUse
     
-function ready(error, keys){//censusData,keys) {	
+function ready(error, keys,keyModes){//censusData,keys) {	
 	if (error) throw error;
+    
     formattedKeys = formatKeys(keys)
-//    formattedCensus = formatData(censusData)
+    keysInUse = keyModes
     
     mapboxgl.accessToken = 'pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ';
 
@@ -23,7 +25,6 @@ function ready(error, keys){//censusData,keys) {
         center: [-73.998617,40.728922], // starting position
         zoom: 14 // starting zoom
     });
-    makeKey()
     // Add geolocate control to the map.
 
     map.on("load",function(){
@@ -67,17 +68,48 @@ function formatKeys(keys){
                 formattedKeys[group]={}
                 formattedKeys[group]["SE_"+key]=value
             }
+        }else if(key[0]=="C"){
+            var group = key.slice(0,5)
+            if(Object.keys(formattedKeys).indexOf(group)>-1){
+                 formattedKeys[group][key]=value
+            }else{
+                formattedKeys[group]={}
+                 formattedKeys[group][key]=value
+            }
         }
     }
     return formattedKeys
 }
 function formatData(data){
     var formatted = {}
-    for(var d in data){
-        var gid = data[d]["Geo_GEOID"]
-        formatted[gid]=data[d]
+    var displayStr = ""
+    for(var group in keysInUse){
+        var mode = keysInUse[group]
+        if(mode == "sum"){
+            for(var key in formattedKeys[group]){
+                var keyName = formattedKeys[group][key]
+                var value = 0
+                for(var d in data){
+                   value += parseInt(data[d][key])
+                }
+                formatted[key]={"name":keyName,"value":value}
+                //console.log([keyName,key,value])
+            }
+           
+        }
     }
-    return formatted
+    for(var f in formatted){
+        //console.log(f)
+        if(f.slice(f.length-3,f.length)!="001"){
+            var total = formatted[f.slice(0,f.length-3)+"001"].value
+            var value = formatted[f].value
+            var percent = Math.round(value/total*10000)/100
+            var label = formatted[f].name.split(": ")
+            
+            displayStr=displayStr+ percent+"% "+ label[label.length-1]+"<br/>"
+        }
+    }
+    d3.select("#key").html(displayStr)
 }
 
 function getIsochrone(map,intervals){
@@ -89,8 +121,6 @@ function getIsochrone(map,intervals){
         url:Url,
         type:"GET",
         success:function(result){
-            var temp = result["features"][0]["geometry"]["coordinates"]+"<br/>"
-            d3.select("#info").html(temp)
            // console.log(temp)
             drawIsochrones(result,map,intervals)
             getCensusGeo(result,map,intervals)
@@ -113,51 +143,34 @@ function getCensusGeo(result, map,intervals){
         censusGeos.push(ids)
     }
     var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
-    d3.select("#key").html(censusGeos[0]+"<br/>"+censusGeos[1])
+ //   d3.select("#key").html(censusGeos[0]+"<br/>"+censusGeos[1])
   //  map.setFilter("tracts_highlight", filter);
- //   getCensusData(censusGeos)
+    getCensusFiles(censusGeos)
+//  console.log(formattedKeys)
 }
-function getCensusData(geoids){
-    geoids = geoids.sort(function(a,b) {
-        return a.length - b.length;
-    });
-    var tractsCount = ""
-    for(var g in geoids){
-        var time = intervals[g]
-        var tracts = geoids[g].length
-        var countries = summarizeData(geoids[g])
-        tractsCount+=tracts+" tracts within "+time+" minutes of walking, with"
-        +" residents from more than <strong>"
-        + countries.length+" countries</strong>"+"<br/><br/>"
-    }
-   d3.select("#info").html(tractsCount)
-}
-
-function summarizeData(tracts){
-    //modes: reaverage, unique, percent each    
+function getCensusFiles(geoids){
     
-    var groupsInUse = ["T139"]
-    for(var g in groupsInUse){
-        var group = groupsInUse[g]
-        var categories = Object.keys(formattedKeys[group])
-        var unique = []
-        for(var t in tracts){
-            var tract = tracts[t].replace("00000","000")
-            for(var c in categories){
-                var key = formattedKeys[group][categories[c]]
-                var value = parseInt(formattedCensus[tract][categories[c]])
-                if(key.split(":").length==4 && value>0 && unique.indexOf(key.split(":")[3])==-1){
-                    unique.push(key.split(":")[3])
-                }
-            }
+    var q = queue();
+    for( var i in geoids[0]){
+        var filename = "census_by_geo/"+geoids[0][i].replace("00000","000")+".json"
+        q = q.defer(d3.json, filename);
+        
+    }
+    q.await(onCensusLoaded);
+    
+}
+function onCensusLoaded(error){
+    var censusData = {}
+    if(!error){
+        for(var i =1; i < arguments.length;i++){
+            var gid = arguments[i]["Geo_GEOID"]
+            censusData[gid]=arguments[i]
         }
-        return unique
     }
+    //console.log(censusData)
+    formatData(censusData)
 }
 
-function makeKey(){
-    
-}
 function drawCenter(map){
     
     var center = map.getCenter();
