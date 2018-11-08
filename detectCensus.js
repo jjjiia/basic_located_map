@@ -32,8 +32,8 @@ function ready(error, censusData,keys) {
             },
             trackUserLocation: true
         }));    
-        getIsochrone(map,intervals)
-        drawCenter(map)
+       // getIsochrone(map,intervals)
+    //    drawCenter(map)
     })
     
     map.on("moveend",function(){
