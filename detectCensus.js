@@ -87,8 +87,11 @@ function getIsochrone(map,intervals){
         url:Url,
         type:"GET",
         success:function(result){
+            var temp = result["features"][0]["geometry"]["coordinates"]+"<br/>"
+            d3.select("#info").html(temp)
+            console.log(temp)
             drawIsochrones(result,map,intervals)
-            getCensusGeo(result,map,intervals)
+           // getCensusGeo(result,map,intervals)
         }
     })
 }
