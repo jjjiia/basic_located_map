@@ -93,7 +93,7 @@ function getIsochrone(map,intervals){
             d3.select("#info").html(temp)
            // console.log(temp)
             drawIsochrones(result,map,intervals)
-           // getCensusGeo(result,map,intervals)
+            getCensusGeo(result,map,intervals)
         }
     })
 }
@@ -113,6 +113,7 @@ function getCensusGeo(result, map,intervals){
         censusGeos.push(ids)
     }
     var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
+    d3.select("#key").html(censusGeos[0]+"<br/>"+censusGeos[1])
   //  map.setFilter("tracts_highlight", filter);
  //   getCensusData(censusGeos)
 }
