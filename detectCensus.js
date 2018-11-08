@@ -129,7 +129,6 @@ function getCensusData(geoids){
         tractsCount+=tracts+" tracts within "+time+" minutes of walking, with"
         +" residents from more than <strong>"
         + countries.length+" countries</strong>"+"<br/><br/>"
-       // console.log(countries)
     }
    d3.select("#info").html(tractsCount)
 }
