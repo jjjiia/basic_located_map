@@ -1,11 +1,4 @@
-mapboxgl.accessToken = 'pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ';
 
-var map = new mapboxgl.Map({
-    container: 'map', // container id
-    style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
-    center: [-73.998617,40.728922], // starting position
-    zoom: 14 // starting zoom
-});
 
 d3.queue()
     .defer(d3.csv, "R11901662_SL140.csv")
@@ -22,7 +15,14 @@ function ready(error, censusData,keys) {
     formattedKeys = formatKeys(keys)
     formattedCensus = formatData(censusData)
     
-   
+    mapboxgl.accessToken = 'pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ';
+
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
+        center: [-73.998617,40.728922], // starting position
+        zoom: 14 // starting zoom
+    });
     makeKey()
     // Add geolocate control to the map.
 
@@ -35,7 +35,7 @@ function ready(error, censusData,keys) {
             trackUserLocation: true
         }));    
         getIsochrone(map,intervals)
-    //    drawCenter(map)
+        drawCenter(map)
     })
     
     map.on("moveend",function(){
@@ -91,7 +91,7 @@ function getIsochrone(map,intervals){
         success:function(result){
             var temp = result["features"][0]["geometry"]["coordinates"]+"<br/>"
             d3.select("#info").html(temp)
-            console.log(temp)
+           // console.log(temp)
             drawIsochrones(result,map,intervals)
            // getCensusGeo(result,map,intervals)
         }
