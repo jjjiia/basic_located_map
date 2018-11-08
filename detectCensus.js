@@ -1,7 +1,7 @@
 
 
 d3.queue()
-    .defer(d3.csv, "R11901662_SL140.csv")
+    //.defer(d3.csv, "R11901662_SL140.csv")
     .defer(d3.json, "keys.json")
     .await(ready);
 
@@ -10,10 +10,10 @@ var intervals = [5]
 var formattedKeys
 var formattedCensus 
     
-function ready(error, censusData,keys) {	
+function ready(error, keys){//censusData,keys) {	
 	if (error) throw error;
     formattedKeys = formatKeys(keys)
-    formattedCensus = formatData(censusData)
+//    formattedCensus = formatData(censusData)
     
     mapboxgl.accessToken = 'pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ';
 
@@ -114,7 +114,7 @@ function getCensusGeo(result, map,intervals){
     }
     var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
   //  map.setFilter("tracts_highlight", filter);
-    getCensusData(censusGeos)
+ //   getCensusData(censusGeos)
 }
 function getCensusData(geoids){
     geoids = geoids.sort(function(a,b) {
