@@ -6,7 +6,7 @@ d3.queue()
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [5]
+var intervals = [5,10,20]
     
 var formattedKeys
 var keysInUse
@@ -23,7 +23,7 @@ function ready(error, keys,keyModes){//censusData,keys) {
         container: 'map', // container id
         style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
         center: [-73.998617,40.728922], // starting position
-        zoom: 14 // starting zoom
+        zoom: 13.5 // starting zoom
     });
     // Add geolocate control to the map.
 
@@ -178,7 +178,7 @@ function drawCenter(map){
     map.addLayer({
         "id":"center",
         "name":"center",
-        "type":"symbol",
+        "type":"circle",
         "source":{
             "type":"geojson",
             "data":{
@@ -188,30 +188,27 @@ function drawCenter(map){
                     "geometry":{
                         "type":"Point",
                         "coordinates":centerCoords,
-                    },
-                    "properties":{
-                        "title":"center of the map",
-                        "icon": "monument"
                     }
                 }]
             }
         },
-        "layout": {
-                  "icon-image": "{icon}-15",
-                  "text-field": "{title}",
-                  "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-                  "text-offset": [0, 0],
-                  "text-anchor": "top"
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#cc5f43"
               }
     })
     
 }
 function drawIsochrones(result,map,intervals){
+            
+   var opacity = [.3,.5,.8]
+    var width = [1,2,3]
     for(var l in intervals){
+           
         map.addLayer({
             "id":"iso_"+intervals[l],
             "name":"iso_"+intervals[l],
-            "type":"fill",
+            "type":"line",
             "source":{
                 "type":"geojson",
                 "data":{
@@ -222,9 +219,11 @@ function drawIsochrones(result,map,intervals){
             },
             "layout":{},
             "paint":{
-                "fill-color":"#000",
-                "fill-opacity":.3
-//                "line-color":"#000"
+            //    "fill-color":"#000",
+               // "fill-opacity":.3
+                "line-color":"#d64b3b",
+                "line-width":width[l],
+                "line-opacity":opacity[l]
             }
         })
     }
