@@ -6,7 +6,7 @@ d3.queue()
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [5,10,20]
+var intervals = [5]
     
 var formattedKeys
 var keysInUse
@@ -144,7 +144,7 @@ function getCensusGeo(result, map,intervals){
     }
     var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
  //   d3.select("#key").html(censusGeos[0]+"<br/>"+censusGeos[1])
-  //  map.setFilter("tracts_highlight", filter);
+    map.setFilter("tracts_highlight", filter);
     getCensusFiles(censusGeos)
 //  console.log(formattedKeys)
 }
@@ -201,8 +201,8 @@ function drawCenter(map){
 }
 function drawIsochrones(result,map,intervals){
             
-   var opacity = [.3,.5,.8]
-    var width = [1,2,3]
+   var opacity =[.8]// [.3,.5,.8]
+    var width = [3]//[1,2,3]
     for(var l in intervals){
            
         map.addLayer({
