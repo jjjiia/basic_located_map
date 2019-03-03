@@ -17,9 +17,10 @@
     
     <style>
         body { margin:0; padding:10px;
-        font-family:helvetica, sans-serif; color:#444;font-size:8px;}
+        font-family:helvetica, sans-serif; color:#444;font-size:11px;}
         #map {height:500px;}
-        #info{color:#d64b3b; font-size:24px;}
+        #info{color:#000; font-size:14px;}
+        .dataColumn{width:200px;display:inline-block;}
     </style>
 </head>
 <body>
@@ -27,9 +28,10 @@
         
     <div class="row">
         <div class ="col-sm" id='map'></div>
-        <div class ="col-sm" id="info">areas(tracts) within 5 minute walk of here contain:</div>
+        <div class ="col-sm" id="info">areas(tracts) within 5,10,20 minute walk of here contain:</div>
     </div>
     
+    <div id = "data"></div>
     <div class="row">
         <div class ="col" id="key">key</div>
     </div>

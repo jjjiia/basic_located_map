@@ -6,7 +6,7 @@ d3.queue()
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [5]
+var intervals = [5,10,20]
     
 var formattedKeys
 var keysInUse
@@ -23,7 +23,9 @@ function ready(error, keys,keyModes){//censusData,keys) {
         container: 'map', // container id
         style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
         center: [-73.998617,40.728922], // starting position
-        zoom: 13.5 // starting zoom
+        zoom: 13.5,
+        maxZoom:15,
+        minZoom:12 // starting zoom
     });
     // Add geolocate control to the map.
 
@@ -40,6 +42,7 @@ function ready(error, keys,keyModes){//censusData,keys) {
     })
     
     map.on("moveend",function(){
+       d3.selectAll(".dataColumn").remove()
         map.removeLayer("center")
         map.removeSource("center")
         for(var i in intervals){
@@ -81,8 +84,9 @@ function formatKeys(keys){
     return formattedKeys
 }
 function formatData(data){
+    d3.select("#data").append("div").attr("class","dataColumn").attr("id","ring_"+Object.keys(data).length)
     var formatted = {}
-    var displayStr = ""
+    var displayStr = "<strong>"+Object.keys(data).length+" tracts</strong><br>"
     for(var group in keysInUse){
         var mode = keysInUse[group]
         if(mode == "sum"){
@@ -93,7 +97,6 @@ function formatData(data){
                    value += parseInt(data[d][key])
                 }
                 formatted[key]={"name":keyName,"value":value}
-                //console.log([keyName,key,value])
             }
            
         }
@@ -109,7 +112,7 @@ function formatData(data){
             displayStr=displayStr+ percent+"% "+ label[label.length-1]+"<br/>"
         }
     }
-    d3.select("#key").html(displayStr)
+    d3.select("#ring_"+Object.keys(data).length).html(displayStr)
 }
 
 function getIsochrone(map,intervals){
@@ -142,21 +145,22 @@ function getCensusGeo(result, map,intervals){
         })
         censusGeos.push(ids)
     }
-    var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
+   // var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
  //   d3.select("#key").html(censusGeos[0]+"<br/>"+censusGeos[1])
-    map.setFilter("tracts_highlight", filter);
-    getCensusFiles(censusGeos)
+   // map.setFilter("tracts_highlight", filter);
+   for(var j in censusGeos){
+       getCensusFiles(censusGeos[j],j)
+   }
+    
 //  console.log(formattedKeys)
 }
-function getCensusFiles(geoids){
-    
+function getCensusFiles(geoids,interval){
     var q = queue();
-    for( var i in geoids[0]){
-        var filename = "census_by_geo/"+geoids[0][i].replace("00000","000")+".json"
-        q = q.defer(d3.json, filename);
-        
-    }
-    q.await(onCensusLoaded);
+        for( var i in geoids){
+            var filename = "census_by_geo/"+geoids[i].replace("00000","000")+".json"
+            q = q.defer(d3.json, filename);
+        }
+        q.await(onCensusLoaded);
     
 }
 function onCensusLoaded(error){
@@ -167,7 +171,6 @@ function onCensusLoaded(error){
             censusData[gid]=arguments[i]
         }
     }
-    //console.log(censusData)
     formatData(censusData)
 }
 
@@ -204,7 +207,6 @@ function drawIsochrones(result,map,intervals){
    var opacity =[.8]// [.3,.5,.8]
     var width = [3]//[1,2,3]
     for(var l in intervals){
-           
         map.addLayer({
             "id":"iso_"+intervals[l],
             "name":"iso_"+intervals[l],
@@ -219,11 +221,11 @@ function drawIsochrones(result,map,intervals){
             },
             "layout":{},
             "paint":{
-            //    "fill-color":"#000",
-               // "fill-opacity":.3
+                //"fill-color":"#000",
+                //"fill-opacity":.3,
                 "line-color":"#d64b3b",
-                "line-width":width[l],
-                "line-opacity":opacity[l]
+                "line-width":5,
+                "line-opacity":.8
             }
         })
     }
