@@ -19,20 +19,18 @@
     <style>
         body { margin:0; padding:10px;
         font-family:helvetica, sans-serif; color:#444;font-size:11px;}
-        #map {height:500px;}
-        #info{color:#000; font-size:14px;}
+        #map {height:50%;position:fixed;width:100%;left:0px;top:0px;}
+        #info{color:#000; font-size:14px;position:fixed;top:300px;}
+        #charts{position:absolute;top:50%;height:50%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
     </style>
 </head>
 <body>
     <div class="container">
-        
-    <div class="row">
+        <div id = "charts"></div>
         <div class ="col-sm" id='map'></div>
         <div class ="col-sm" id="info"></div>
-    </div>
     
-    <div id = "data"></div>
     <div class="row">
         <div class ="col" id="key">key</div>
     </div>
