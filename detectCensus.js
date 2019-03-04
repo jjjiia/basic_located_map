@@ -6,7 +6,7 @@ d3.queue()
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [5,10,20]
+var intervals = [5,10,15]
     
 var formattedKeys
 var keysInUse
@@ -23,12 +23,12 @@ function ready(error, keys,keyModes){//censusData,keys) {
         container: 'map', // container id
         style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
         center: [-73.998617,40.728922], // starting position
-        zoom: 13.5,
-        maxZoom:15,
-        minZoom:12 // starting zoom
+        zoom: 13.5
+       // maxZoom:15,
+        //minZoom:10 // starting zoom
     });
-    // Add geolocate control to the map.
-
+    // Add geolocate control to the map
+    //https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
     map.on("load",function(){
         map.dragRotate.disable();
         map.addControl(new mapboxgl.GeolocateControl({
@@ -38,25 +38,53 @@ function ready(error, keys,keyModes){//censusData,keys) {
             trackUserLocation: true
         }));    
         getIsochrone(map,intervals)
-        drawCenter(map)
+        d3.select(".mapboxgl-ctrl-logo").remove()
+        d3.select(".mapboxgl-ctrl-bottom-right").remove()
+        d3.select("#info").html("areas(tracts) within "+intervals+" minute walks of here contain:")
     })
+    var flying
+    map.on('flystart', function(){
+        flying = true;
+        console.log("fly start")
+    });
+    map.on('flyend', function(){
+        flying = false;
+    });
+    map.on('moveend', function(e){
+       if(flying){
+          // tooltip or overlay here
+          console.log("end")
+       }
+    });
     
-    map.on("moveend",function(){
+    map.on("dragend",function(){
        d3.selectAll(".dataColumn").remove()
         map.removeLayer("center")
         map.removeSource("center")
         for(var i in intervals){
             try{
                 map.removeLayer("iso_"+intervals[i])
+                map.removeLayer("iso_label_"+intervals[i])
+                map.removeLayer("iso_outline_"+intervals[i])
                 map.removeSource("iso_"+intervals[i])
+                map.removeSource("iso_label_"+intervals[i])
+                map.removeSource("iso_outline_"+intervals[i])
             }
             catch(err){
-            
             }
         }
         getIsochrone(map,intervals)
-        drawCenter(map)
-    })
+    })    
+}
+function zoomToBounds(map,intervals,result){
+    //https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/
+   // console.log(intervals[intervals.length-1])
+    var outerIntervalIndex = 0//intervals.length-1
+    var outerCoordinates = result.features[outerIntervalIndex].geometry.coordinates[0]
+    var bounds = outerCoordinates.reduce(function(bounds, coord) {
+        return bounds.extend(coord);
+    }, new mapboxgl.LngLatBounds(outerCoordinates[0], outerCoordinates[0]));
+    map.fitBounds(bounds,{padding:20})
 }
 function formatKeys(keys){
     var formattedKeys = {}
@@ -127,6 +155,7 @@ function getIsochrone(map,intervals){
            // console.log(temp)
             drawIsochrones(result,map,intervals)
             getCensusGeo(result,map,intervals)
+            zoomToBounds(map,intervals,result)
         }
     })
 }
@@ -145,9 +174,9 @@ function getCensusGeo(result, map,intervals){
         })
         censusGeos.push(ids)
     }
-   // var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
+    var filter = ['in', 'AFFGEOID'].concat(censusGeos[0]);
  //   d3.select("#key").html(censusGeos[0]+"<br/>"+censusGeos[1])
-   // map.setFilter("tracts_highlight", filter);
+    map.setFilter("tracts_highlight", filter);
    for(var j in censusGeos){
        getCensusFiles(censusGeos[j],j)
    }
@@ -196,21 +225,23 @@ function drawCenter(map){
             }
         },
         "paint": {
-            "circle-radius": 10,
-            "circle-color": "#cc5f43"
+            "circle-radius": 5,
+            "circle-color": "#000000"
               }
     })
     
 }
 function drawIsochrones(result,map,intervals){
-            
    var opacity =[.8]// [.3,.5,.8]
-    var width = [3]//[1,2,3]
-    for(var l in intervals){
+    var width = [3]//[1,2,3]    
+    var oScale = d3.scaleLinear().domain([0,intervals.length]).range([.7,1])
+    var wScale = d3.scaleLinear().domain([0,intervals.length]).range([.5,2])
+    var cScale = d3.scaleLinear().domain([0,intervals.length]).range(["yellow","green"])
+    for(var l in intervals){        
         map.addLayer({
             "id":"iso_"+intervals[l],
             "name":"iso_"+intervals[l],
-            "type":"line",
+            "type":"fill",//change this to line if outline is needed
             "source":{
                 "type":"geojson",
                 "data":{
@@ -221,14 +252,65 @@ function drawIsochrones(result,map,intervals){
             },
             "layout":{},
             "paint":{
-                //"fill-color":"#000",
-                //"fill-opacity":.3,
-                "line-color":"#d64b3b",
-                "line-width":5,
-                "line-opacity":.8
+                "fill-color":"#399f71",
+                //"fill-color":cScale(l),
+                "fill-opacity":.1
+                //"line-color":"#d64b3b",
+                //"line-width":wScale(l),
+                //"line-opacity":oScale(l)
+            }
+        })
+        map.addLayer({
+            "id":"iso_outline_"+intervals[l],
+            "name":"iso_outline_"+intervals[l],
+            "type":"line",//change this to line if outline is needed
+            "source":{
+                "type":"geojson",
+                "data":{
+                    "type":"Feature",
+                    "geometry":
+                        result.features[l].geometry
+                }
+            },
+            "layout":{},
+            "paint":{
+                "line-color":"#399f71",
+                "line-width":wScale(l),
+                "line-opacity":oScale(l)
+            }
+        })
+        //https://docs.mapbox.com/mapbox-gl-js/example/geojson-markers/
+        map.addLayer({
+            "id":"iso_label_"+intervals[l],
+            "name":"iso_label_"+intervals[l],
+            "type":"symbol",//change this to line if outline is needed
+            "source":{
+                "type":"geojson",
+                "data":{
+                    "type":"Feature",
+                    "geometry":{
+                        "type":"Point",
+                        "coordinates":result.features[l].geometry.coordinates[0][0]
+                    },
+                    "properties":{
+                        "title":result.features[l].properties.contour,
+                    }
+                }
+               
+            },
+            "layout":{
+                "text-field": "{title}",
+                "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+                "text-offset": [0, 0.2],
+                "text-anchor": "top"
+            },
+            "paint":{
+                "text-color":"#399f71"
             }
         })
     }
+        drawCenter(map)
+    
 }
 
 
