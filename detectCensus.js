@@ -1,5 +1,5 @@
 
-var mainColor = "#399f71"
+var mainColor = "#EF382F"
 d3.queue()
     //.defer(d3.csv, "R11901662_SL140.csv")
     .defer(d3.json, "keys.json")
@@ -41,7 +41,6 @@ function ready(error, keys,keyModes){//censusData,keys) {
         getIsochrone(map,intervals)
         d3.select(".mapboxgl-ctrl-logo").remove()
         d3.select(".mapboxgl-ctrl-bottom-right").remove()
-        d3.select("#info").html("areas(tracts) within "+intervals+" minute walks of here contain:")
     })
     //var geoLocate=d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed")
         var locating 
@@ -95,7 +94,7 @@ function zoomToBounds(map,intervals,result){
     var bounds = outerCoordinates.reduce(function(bounds, coord) {
         return bounds.extend(coord);
     }, new mapboxgl.LngLatBounds(outerCoordinates[0], outerCoordinates[0]));
-    map.fitBounds(bounds,{padding:20})
+    map.fitBounds(bounds,{padding:40})
 }
 function formatKeys(keys){
     var formattedKeys = {}
@@ -153,11 +152,22 @@ function formatForCharts(data){
     return formattedByCode
 }
 function drawCharts(data){
+    var populations = data["SE_T001_001"]
+    var displayText = ""
+    for(var p in populations){
+        if(p==0){
+            displayText+=populations[p]["value"]+" people live in the census tracts within a "+populations[p]["interval"]+" min walk of here, "
+        }else if(p==populations.length-1){
+            displayText+=" and "+populations[p]["value"]+" within "+populations[p]["interval"]+" minutes."
+        }else{
+            displayText+=populations[p]["value"]+" within "+populations[p]["interval"]+" minutes, "
+        }
+    }
+    d3.select("#info").html(displayText)
+    
     for(var i in data){
         if(i.split("_")[2]!="001"){
             lineChart(i, data[i])
-            console.log(i)
-            //break
         }
     }
     
@@ -171,6 +181,7 @@ function lineChart(code, data){
         data[0].name
         .replace("Employed Civilian Population 16 Years and Over: ","")
         .replace("Total Population: ","")
+        .replace("Population 5 Years and Over: ","")
     )
     .attr("x",10).attr("y",20)
     var line = d3.line()
@@ -389,7 +400,7 @@ function drawIsochrones(result,map,intervals){
             },
             "layout":{},
             "paint":{
-                "fill-color":"#399f71",
+                "fill-color":mainColor,
                 //"fill-color":cScale(l),
                 "fill-opacity":.1
                 //"line-color":"#d64b3b",
@@ -411,7 +422,7 @@ function drawIsochrones(result,map,intervals){
             },
             "layout":{},
             "paint":{
-                "line-color":"#399f71",
+                "line-color":mainColor,
                 "line-width":wScale(l),
                 "line-opacity":oScale(l)
             }
@@ -442,7 +453,7 @@ function drawIsochrones(result,map,intervals){
                 "text-anchor": "top"
             },
             "paint":{
-                "text-color":"#399f71"
+                "text-color":mainColor
             }
         })
     }

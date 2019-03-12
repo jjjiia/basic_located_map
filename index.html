@@ -12,6 +12,7 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+    <script src="lib/FileSaver.js"></script>
     <script src="lib/d3.v4.min.js"></script>
     <script src="lib/queue.v1.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -19,21 +20,21 @@
     <style>
         body { margin:0; padding:10px;
         font-family:helvetica, sans-serif; color:#444;font-size:11px;}
-        #map {height:50%;position:fixed;width:100%;left:0px;top:0px;}
-        #info{color:#000; font-size:14px;position:fixed;top:300px;}
+        #map {height:100%;position:fixed;width:100%;left:0px;top:0px;}
+        #info{color:#666; font-size:24px;position:absolute;bottom:0px;left:0px;background-color:rgba(255,255,255,0.7);padding:20px;}
         #charts{position:absolute;top:50%;height:50%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
     </style>
 </head>
 <body>
     <div class="container">
+<!--
         <div id = "charts"></div>
+-->
         <div class ="col-sm" id='map'></div>
         <div class ="col-sm" id="info"></div>
     
-    <div class="row">
-        <div class ="col" id="key">key</div>
-    </div>
+    
 </div>
 <script src='detectCensus.js'></script>
 

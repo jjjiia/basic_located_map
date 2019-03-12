@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <title>basic basemap</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+  
+    
+    <style>
+      
+    </style>
+</head>
+<body>
+    
+</div>
+		<script type="text/javascript"> 
+       //set up svg, nothing new here
+        var width = window.innerWidth
+        var height = window.innerHeight
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width",width)
+            .attr("height", height);           
+
+        //we need a data file, and a geopath file
+            var promises = []
+        var minutes = [1,2,3,5,10,15]
+            for(var i in minutes){
+                var m = minutes[i]
+                var mFile = m+".geojson"
+                var jsonMFile = d3.json(mFile)
+                promises.push(jsonMFile)
+            }
+            promises.push(d3.json("centerlines.geojson"))
+          //  var minutes = "1.geojson";//these are some park events with coordinates from your colleague
+        //var geoPath = "1.geojson";//this is a geojson, which is json format of outlines for nyc
+
+        //promise allows us to load many files, and only excutes the code inside it once the files have all loaded
+        //before we used d3.csv to load 1 csv file and .then to excute code once its been loaded
+        Promise.all(promises)//here we use d3.json to load the json data, and d3.csv to load the csv data
+        .then(function(data) {//.then is the same as before, we are just saying wait till loading is done, then do this.
+            var padding = 150
+            var outsideGeo = data[minutes.length-1]
+            var projection = d3.geoAlbers()
+                    .fitExtent([[padding,padding],[width-padding,height-padding]],outsideGeo)
+            
+            var wScale = d3.scaleLinear().domain([0,15]).range([2,1])
+            var oScale = d3.scaleLinear().domain([0,15]).range([1,.1])
+            var cScale = d3.scaleLinear().domain([0,15]).range(["red","green"])
+            
+            
+                drawOutline(data[data.length-1],projection,1,2,"green","centerlines")
+            
+            for(var i in minutes){
+                var opacity = oScale(parseInt(minutes[i]))
+                var stroke = wScale(parseInt(minutes[i]))
+                var color = cScale(parseInt(minutes[i]))
+                drawOutline(data[i],projection,stroke,opacity,color,"minutes_"+minutes[i])
+            }
+            
+            
+            //drawOutline(data[1],projection) //call the draw outline function from below 
+        });
+        
+        function drawOutline(geo,projection,lineWidth,opacity,color,className){
+            var path = d3.geoPath().projection(projection);
+            svg.append("g").attr("class",className)
+                .append("path")
+                .attr("d", path(geo))
+                .attr("class",className)
+                .attr("fill", "none")
+                .attr("stroke", color)
+                .attr("opacity",.2)
+                .attr("stroke-width",lineWidth)
+        }
+        </script>
+        
+</body>
+</html>
