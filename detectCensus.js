@@ -7,7 +7,7 @@ d3.queue()
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [2,5,30]
+var intervals = [7,15,30]
     
 var formattedKeys
 var keysInUse
@@ -100,13 +100,13 @@ function setUpEverything(map){
 function drawMinutesBar(map){
    
     var width =120
-    var height = 100
+    var height = 120
     var minuteBar = d3.select("#minutesBar").append("svg").attr("width",width).attr("height",height)
-    var cornerRadius = 6
-    var barWidth = 6
+    var barWidth = 10
+    var cornerRadius = barWidth/2
     var radius = barWidth*2
     
-    var minuteScale = d3.scaleLinear().domain([radius+barWidth,height-radius-barWidth]).range([60,5])
+    var minuteScale = d3.scaleLinear().domain([radius,height-radius]).range([60,5])
     
     minuteBar
         .append("rect")
@@ -119,23 +119,23 @@ function drawMinutesBar(map){
         .attr("fill",mainColor)
    
     var slider = minuteBar//.selectAll(".slider")
-        .append("rect")
+        .append("circle")
         .attr("class","sliderCircle")
-        .attr("x",width/4)
-        .attr("y",height/2-radius)
-        .attr("width",width/2)
-        .attr("height",radius*2)
+        .attr("cx",width/4)
+        .attr("cy",minuteScale.invert(intervals[2]))
+        .attr("r",radius)
         .attr("fill",mainColor)
-        .attr("rx", cornerRadius)
-        .attr("ry", cornerRadius)
+        .attr("cursor","pointer")
     
     minuteBar.append("text")
         .attr("class","sliderCircleLabel")
         .attr("x",width/4)
-        .attr("y",height/2+radius/2)
-        .text(Math.round(minuteScale(height/2)))
+        .attr("text-anchor","middle")
+        .attr("y",minuteScale.invert(intervals[2])+radius/4)
+        .text(Math.round(intervals[2]))
         .attr("fill","#fff")
         .attr("font-weight","bold")
+        .attr("cursor","pointer")
         
     d3.select(".sliderCircle")
         .call(d3.drag()
@@ -156,9 +156,9 @@ function drawMinutesBar(map){
   
         function getSliderPosition(){
             if(d3.event.y<radius+barWidth){
-                var sliderPosition = radius+barWidth
-            }else if(d3.event.y>height-radius-barWidth){
-                var sliderPosition = height-radius-barWidth
+                var sliderPosition = radius
+            }else if(d3.event.y>height-radius){
+                var sliderPosition = height-radius
             }else{
                 var sliderPosition = d3.event.y
             }
@@ -167,12 +167,11 @@ function drawMinutesBar(map){
         
         function dragged() {
           d3.select(this)
-            .attr("y", function(){
-                
+            .attr("cy", function(){
                 var sliderPosition = getSliderPosition()
                 d3.select(".sliderCircleLabel")
-                .text(Math.round(minuteScale(sliderPosition))+" minutes")
-                .attr("y",sliderPosition+radius/2)
+                .text(Math.round(minuteScale(sliderPosition)))
+                .attr("y",sliderPosition+radius/4)
                 .moveToFront()
                 
                 return sliderPosition
@@ -529,6 +528,8 @@ function drawIsochrones(result,map,intervals){
             }
         })
         //https://docs.mapbox.com/mapbox-gl-js/example/geojson-markers/
+        var contourLabelCircle = [mainColor,"#ffffff","#ffffff"]
+        
         map.addLayer({
             "id":"iso_circle_"+result.features[l].properties.contour,
             "name":"iso_circle_"+result.features[l].properties.contour,
@@ -549,9 +550,11 @@ function drawIsochrones(result,map,intervals){
             },
             "paint":{
                 "circle-radius":12,
-                "circle-color":mainColor
+                "circle-color":contourLabelCircle[l]
             }
         })
+        
+        var contourLabelText = ["#ffffff",mainColor,mainColor]
         map.addLayer({
             "id":"iso_label_"+result.features[l].properties.contour,
             "name":"iso_label_"+result.features[l].properties.contour,
@@ -578,7 +581,7 @@ function drawIsochrones(result,map,intervals){
                 "text-size":11
             },
             "paint":{
-                "text-color":"#ffffff"
+                "text-color":contourLabelText[l]
             }
         })
         
