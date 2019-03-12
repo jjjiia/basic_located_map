@@ -7,7 +7,7 @@ d3.queue()
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [2,3,5,30]
+var intervals = [2,5,30]
     
 var formattedKeys
 var keysInUse
@@ -42,6 +42,8 @@ function ready(error, keys,keyModes){//censusData,keys) {
         getIsochrone(map,intervals)
         d3.select(".mapboxgl-ctrl-logo").remove()
         d3.select(".mapboxgl-ctrl-bottom-right").remove()
+        
+         drawMinutesBar(map)
     })
     //var geoLocate=d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed")
         var locating 
@@ -50,43 +52,143 @@ function ready(error, keys,keyModes){//censusData,keys) {
         locating = d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed")
    })
     map.on("moveend",function(){
+            d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed","false")
        
         if(locating == "true"){
             d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed","false")
             locating = "false"
-            setUpEverything()
+            setUpEverything(map)
         }
     })
    
     
     map.on("dragend",function(){
-         setUpEverything()
+         setUpEverything(map)
         //d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed",false)
     })
-    
-    
-    
-    function setUpEverything(){
-       d3.selectAll(".dataColumn").remove()
-        map.removeLayer("center")
-        map.removeSource("center")
-        for(var i in intervals){
-            try{
-                map.removeLayer("iso_"+intervals[i])
-                map.removeLayer("iso_label_"+intervals[i])
-                map.removeLayer("iso_outline_"+intervals[i])
-                map.removeSource("iso_"+intervals[i])
-                map.removeSource("iso_label_"+intervals[i])
-                map.removeSource("iso_outline_"+intervals[i])
-            }
-            catch(err){
-            }
+}
+function setUpEverything(map){
+   d3.selectAll(".dataColumn").remove()
+    map.removeLayer("center")
+    map.removeSource("center")
+    var allLayers = map.getStyle().layers
+    for(var l in allLayers){
+        var currentLayer = allLayers[l].id
+        if(currentLayer.split("_")[0]=="iso"){
+            map.removeLayer(currentLayer)
+            map.removeSource(currentLayer)
         }
-        getIsochrone(map,intervals)
     }
     
+    //for(var i in intervals){
+    //    try{
+    //        map.removeLayer("iso_"+intervals[i])
+    //        map.removeLayer("iso_label_"+intervals[i])
+    //        map.removeLayer("iso_outline_"+intervals[i])
+    //        map.removeLayer("iso_circle_"+intervals[i])
+    //        map.removeSource("iso_"+intervals[i])
+    //        map.removeSource("iso_label_"+intervals[i])
+    //        map.removeSource("iso_outline_"+intervals[i])
+    //        map.removeSource("iso_circle_"+intervals[i])
+    //    }
+    //    catch(err){
+    //    }
+    //}
+    getIsochrone(map,intervals)        
+}  
+
+function drawMinutesBar(map){
+   
+    var width =120
+    var height = 100
+    var minuteBar = d3.select("#minutesBar").append("svg").attr("width",width).attr("height",height)
+    var cornerRadius = 6
+    var barWidth = 6
+    var radius = barWidth*2
+    
+    var minuteScale = d3.scaleLinear().domain([radius+barWidth,height-radius-barWidth]).range([60,5])
+    
+    minuteBar
+        .append("rect")
+        .attr("rx", cornerRadius)
+        .attr("ry", cornerRadius)
+        .attr("x", width/4-barWidth/2)
+        .attr("y", 0)
+        .attr("width", barWidth)
+        .attr("height", height)
+        .attr("fill",mainColor)
+   
+    var slider = minuteBar//.selectAll(".slider")
+        .append("rect")
+        .attr("class","sliderCircle")
+        .attr("x",width/4)
+        .attr("y",height/2-radius)
+        .attr("width",width/2)
+        .attr("height",radius*2)
+        .attr("fill",mainColor)
+        .attr("rx", cornerRadius)
+        .attr("ry", cornerRadius)
+    
+    minuteBar.append("text")
+        .attr("class","sliderCircleLabel")
+        .attr("x",width/4)
+        .attr("y",height/2+radius/2)
+        .text(Math.round(minuteScale(height/2)))
+        .attr("fill","#fff")
+        .attr("font-weight","bold")
         
+    d3.select(".sliderCircle")
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+        );
+        
+        d3.selection.prototype.moveToFront = function() {  
+           return this.each(function(){
+             this.parentNode.appendChild(this);
+           });
+         };
+        
+        function dragstarted() {
+          d3.select(this).raise().classed("active", true);
+        }
+  
+        function getSliderPosition(){
+            if(d3.event.y<radius+barWidth){
+                var sliderPosition = radius+barWidth
+            }else if(d3.event.y>height-radius-barWidth){
+                var sliderPosition = height-radius-barWidth
+            }else{
+                var sliderPosition = d3.event.y
+            }
+            return sliderPosition
+        }
+        
+        function dragged() {
+          d3.select(this)
+            .attr("y", function(){
+                
+                var sliderPosition = getSliderPosition()
+                d3.select(".sliderCircleLabel")
+                .text(Math.round(minuteScale(sliderPosition))+" minutes")
+                .attr("y",sliderPosition+radius/2)
+                .moveToFront()
+                
+                return sliderPosition
+            });
+        }
+
+        function dragended() {
+          d3.select(this).classed("active", false);
+          var sliderPosition = getSliderPosition()
+          var sliderMinutes = minuteScale(sliderPosition)
+          
+          intervals = [Math.round(sliderMinutes/4),Math.round(sliderMinutes/2),Math.round(sliderMinutes)]
+          setUpEverything(map)
+        }
 }
+
 function zoomToBounds(map,intervals,result){
     //https://docs.mapbox.com/mapbox-gl-js/example/zoomto-linestring/
    // console.log(intervals[intervals.length-1])
@@ -122,7 +224,7 @@ function formatKeys(keys){
     }
     return formattedKeys
 }
-function formatByInterval(data){    
+function formatByInterval(data){        
     for(var i in geosByInterval){
         var intervalData = {}
         var geoids = geosByInterval[i]
@@ -130,7 +232,6 @@ function formatByInterval(data){
             var geoid = geoids[g].replace("00000","000")
             intervalData[geoid]=data[geoid]
         }
-        //console.log(intervalData)
         formatData(intervalData,i)
     }
     var formattedByCode = formatForCharts(geosByInterval)
@@ -237,10 +338,9 @@ function lineChart(code, data){
             }else{
                 return yScale(d.percent)+15
             }
-                
         })
-            
 }
+
 function formatData(data,interval){
     d3.select("#data").append("div").attr("class","dataColumn").attr("id","ring_"+interval)
     
@@ -296,7 +396,7 @@ function getIsochrone(map,intervals){
 }
 function getCensusGeo(result, map,intervals){
     var censusGeos = []    
-    
+    geosByInterval = {}
     for(var i in result.features){
         var polygonBoundingBox = turf.bbox(result.features[i].geometry);
         var southWest = [polygonBoundingBox[0], polygonBoundingBox[1]];
@@ -384,12 +484,12 @@ function drawIsochrones(result,map,intervals){
    var opacity =[.8]// [.3,.5,.8]
     var width = [3]//[1,2,3]    
     var oScale = d3.scaleLinear().domain([0,intervals.length]).range([.7,1])
-    var wScale = d3.scaleLinear().domain([0,intervals.length]).range([.5,2])
+    var wScale = d3.scaleLinear().domain([0,intervals.length]).range([1,3])
     var cScale = d3.scaleLinear().domain([0,intervals.length]).range(["yellow","green"])
-    for(var l in intervals){        
+    for(var l in intervals){     
         map.addLayer({
-            "id":"iso_"+intervals[l],
-            "name":"iso_"+intervals[l],
+            "id":"iso_"+result.features[l].properties.contour,
+            "name":"iso_"+result.features[l].properties.contour,
             "type":"fill",//change this to line if outline is needed
             "source":{
                 "type":"geojson",
@@ -410,8 +510,8 @@ function drawIsochrones(result,map,intervals){
             }
         })
         map.addLayer({
-            "id":"iso_outline_"+intervals[l],
-            "name":"iso_outline_"+intervals[l],
+            "id":"iso_outline_"+result.features[l].properties.contour,
+            "name":"iso_outline_"+result.features[l].properties.contour,
             "type":"line",//change this to line if outline is needed
             "source":{
                 "type":"geojson",
@@ -430,8 +530,31 @@ function drawIsochrones(result,map,intervals){
         })
         //https://docs.mapbox.com/mapbox-gl-js/example/geojson-markers/
         map.addLayer({
-            "id":"iso_label_"+intervals[l],
-            "name":"iso_label_"+intervals[l],
+            "id":"iso_circle_"+result.features[l].properties.contour,
+            "name":"iso_circle_"+result.features[l].properties.contour,
+            "type":"circle",//change this to line if outline is needed
+            "source":{
+                "type":"geojson",
+                "data":{
+                    "type":"Feature",
+                    "geometry":{
+                        "type":"Point",
+                        "coordinates":result.features[l].geometry.coordinates[0][0]
+                    },
+                    "properties":{
+                        "title":result.features[l].properties.contour,
+                    }
+                }
+               
+            },
+            "paint":{
+                "circle-radius":12,
+                "circle-color":mainColor
+            }
+        })
+        map.addLayer({
+            "id":"iso_label_"+result.features[l].properties.contour,
+            "name":"iso_label_"+result.features[l].properties.contour,
             "type":"symbol",//change this to line if outline is needed
             "source":{
                 "type":"geojson",
@@ -450,13 +573,16 @@ function drawIsochrones(result,map,intervals){
             "layout":{
                 "text-field": "{title}",
                 "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-                "text-offset": [0, 0.2],
-                "text-anchor": "top"
+                "text-offset": [0, -.6],
+                "text-anchor": "top",
+                "text-size":11
             },
             "paint":{
-                "text-color":mainColor
+                "text-color":"#ffffff"
             }
         })
+        
+       
     }
         drawCenter(map)
     

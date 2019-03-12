@@ -18,32 +18,46 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
     <style>
-        body { margin:0; padding:10px;
-        font-family:helvetica, sans-serif; color:#444;font-size:11px;}
+        body { 
+        font-family:helvetica, sans-serif; 
+        color:#444;font-size:11px;}
+        
         #map {height:100%;position:fixed;width:100%;left:0px;top:0px;z-index:-5;}
         #info{color:#0067B2; font-size:18px;line-height:125%;
-            position:absolute;bottom:0px;left:0px;background-color:rgba(255,255,255,0.8);padding:20px;}
+            position:absolute;
+            bottom:0px;
+            left:0px;
+            background-color:rgba(255,255,255,0.8);
+            padding:20px;
+        }
         #charts{position:absolute;top:50%;height:50%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
-        .mode{color:#0067B2;padding:5px;float:top;border:1px solid #0067B2; 
-            text-align:center;border-radius:10px;
+        .mode{color:#EF382F;
+            padding:5px;
+            border:2px solid #EF382F; 
+            text-align:center;
+            border-radius:30px;
             background-color:rgba(255,255,255,1);
-            width:50px;margin:5px;
-            
+            width:40px;margin:5px;
+            font-weight:bold;
         }
+        #controls{width:200px;height:100px;padding:0px;margin:0px;
+                position: absolute;
+                left: 0px;
+                top: 0px;
+            }
     </style>
 </head>
 <body>
-    <div class="container">
 <!--
         <div id = "charts"></div>
 -->
-   
-        <div class ="col-sm" id='map'></div>
-        <div class ="col-sm" id="info"></div>
+<div id='map'></div>
+<div id="info"></div>
+<div id = "controls">
+    <div class="slider" id="minutesBar">range of outer boundary<br/></div>
     <div class="mode" id="walk">walk</div>
-    <div class="mode" id="drive">drive</div>
- 
+        <div class="mode" id="drive">drive</div>
 </div>
 <script src='detectCensus.js'></script>
 
