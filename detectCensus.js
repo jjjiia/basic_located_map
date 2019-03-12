@@ -1,12 +1,13 @@
 
 var mainColor = "#EF382F"
+var minutesColor = "#EF382F"
 d3.queue()
     //.defer(d3.csv, "R11901662_SL140.csv")
     .defer(d3.json, "keys.json")
     .defer(d3.json, "key_modes.json")
     .await(ready);
 
-var intervals = [5,10,30]
+var intervals = [2,3,5,30]
     
 var formattedKeys
 var keysInUse

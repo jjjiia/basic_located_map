@@ -20,10 +20,17 @@
     <style>
         body { margin:0; padding:10px;
         font-family:helvetica, sans-serif; color:#444;font-size:11px;}
-        #map {height:100%;position:fixed;width:100%;left:0px;top:0px;}
-        #info{color:#666; font-size:24px;position:absolute;bottom:0px;left:0px;background-color:rgba(255,255,255,0.7);padding:20px;}
+        #map {height:100%;position:fixed;width:100%;left:0px;top:0px;z-index:-5;}
+        #info{color:#0067B2; font-size:18px;line-height:125%;
+            position:absolute;bottom:0px;left:0px;background-color:rgba(255,255,255,0.8);padding:20px;}
         #charts{position:absolute;top:50%;height:50%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
+        .mode{color:#0067B2;padding:5px;float:top;border:1px solid #0067B2; 
+            text-align:center;border-radius:10px;
+            background-color:rgba(255,255,255,1);
+            width:50px;margin:5px;
+            
+        }
     </style>
 </head>
 <body>
@@ -31,10 +38,12 @@
 <!--
         <div id = "charts"></div>
 -->
+   
         <div class ="col-sm" id='map'></div>
         <div class ="col-sm" id="info"></div>
-    
-    
+    <div class="mode" id="walk">walk</div>
+    <div class="mode" id="drive">drive</div>
+ 
 </div>
 <script src='detectCensus.js'></script>
 
