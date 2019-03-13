@@ -32,14 +32,17 @@
         }
         #charts{position:absolute;top:50%;height:50%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
-        .mode{color:#EF382F;
+        .mode{color:#ffffff;
             padding:5px;
             border:2px solid #EF382F; 
             text-align:center;
             border-radius:30px;
-            background-color:rgba(255,255,255,1);
+            background-color:#EF382F;
             width:40px;margin:5px;
             font-weight:bold;
+            font-size:14px;
+            letter-spacing:1px;
+            
         }
         #controls{width:100px;
                 height:200px;
@@ -57,11 +60,10 @@
 <div id='map'></div>
 <div id="info"></div>
 <div id = "controls">
-    <div class="sliderBar" id="minutesBar"><br/></div>
-    <div class="mode" id="walk">walk</div>
-        <div class="mode" id="drive">drive</div>
+    <div class="sliderBar" id="minutesBar"></div>
 </div>
 <script src='detectCensus.js'></script>
+<script src='drawCharts.js'></script>
 
 <script>
 

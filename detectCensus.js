@@ -8,13 +8,13 @@ d3.queue()
     .await(ready);
 
 var intervals = [7,15,30]
-    
+var transportMode = "walking"   
 var formattedKeys
 var keysInUse
 var geosByInterval = {}
 function ready(error, keys,keyModes){//censusData,keys) {	
 	if (error) throw error;
-    
+        
     formattedKeys = formatKeys(keys)
     keysInUse = keyModes
     
@@ -43,7 +43,28 @@ function ready(error, keys,keyModes){//censusData,keys) {
         d3.select(".mapboxgl-ctrl-logo").remove()
         d3.select(".mapboxgl-ctrl-bottom-right").remove()
         
-         drawMinutesBar(map)
+        drawMinutesBar(map)
+        
+        d3.select("#controls").append("div")
+        .attr("class","mode")
+        .attr("id","walking")
+        .html("walk")
+        .on("click",function(){
+            transportMode = "walking"
+            setUpEverything(map)
+        })
+        .attr("cursor","pointer")
+        
+        d3.select("#controls").append("div")
+        .attr("class","mode")
+        .attr("id","driving")
+        .html("drive")
+        .on("click",function(){
+            transportMode = "driving"
+            setUpEverything(map)
+        })
+        .attr("cursor","pointer")
+
     })
     //var geoLocate=d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed")
         var locating 
@@ -100,11 +121,12 @@ function setUpEverything(map){
 function drawMinutesBar(map){
    
     var width =120
-    var height = 120
+    var height = 150
     var minuteBar = d3.select("#minutesBar").append("svg").attr("width",width).attr("height",height)
-    var barWidth = 10
+    var barWidth = 13
     var cornerRadius = barWidth/2
     var radius = barWidth*2
+    var fontSize =15
     
     var minuteScale = d3.scaleLinear().domain([radius,height-radius]).range([60,5])
     
@@ -136,7 +158,14 @@ function drawMinutesBar(map){
         .attr("fill","#fff")
         .attr("font-weight","bold")
         .attr("cursor","pointer")
+        .attr("font-size",fontSize)
         
+    d3.select(".sliderCircleLabel")
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+        );
     d3.select(".sliderCircle")
         .call(d3.drag()
             .on("start", dragstarted)
@@ -166,7 +195,7 @@ function drawMinutesBar(map){
         }
         
         function dragged() {
-          d3.select(this)
+          d3.select(".sliderCircle")
             .attr("cy", function(){
                 var sliderPosition = getSliderPosition()
                 d3.select(".sliderCircleLabel")
@@ -257,7 +286,8 @@ function drawCharts(data){
     var displayText = ""
     for(var p in populations){
         if(p==0){
-            displayText+=populations[p]["value"]+" people live in the census tracts within a "+populations[p]["interval"]+" min walk of here, "
+            displayText+=populations[p]["value"]+" people live in the census tracts within a "+populations[p]["interval"]+" min "
+            +transportMode.replace("ing","")+" of here, "
         }else if(p==populations.length-1){
             displayText+=" and "+populations[p]["value"]+" within "+populations[p]["interval"]+" minutes."
         }else{
@@ -380,7 +410,7 @@ function formatData(data,interval){
 function getIsochrone(map,intervals){
     var c = map.getCenter();
     var intervalString = intervals.toString()
-    var Url = "https://api.mapbox.com/isochrone/v1/mapbox/walking/"+c.lng+","
+    var Url = "https://api.mapbox.com/isochrone/v1/mapbox/"+transportMode+"/"+c.lng+","
     +c.lat+"?contours_minutes="+intervalString+"&polygons=true&access_token="+mapboxgl.accessToken
     $.ajax({
         url:Url,
