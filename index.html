@@ -22,15 +22,18 @@
         font-family:helvetica, sans-serif; 
         color:#444;font-size:11px;}
         
-        #map {height:100%;position:fixed;width:100%;left:0px;top:0px;z-index:-5;}
-        #info{color:#0067B2; font-size:18px;line-height:125%;
-            position:absolute;
-            bottom:0px;
+        #map {position:absolute;
+            height:80%;
+            width:100%;
             left:0px;
+            top:0px;
+            z-index:-5;}
+        #info{color:#0067B2; font-size:18px;line-height:125%;
+            
             background-color:rgba(255,255,255,0.8);
             padding:20px;
         }
-        #charts{position:absolute;top:50%;height:50%;overflow:auto;;}
+        #charts{position:absolute;top:80%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
         .mode{color:#ffffff;
             padding:5px;
@@ -42,7 +45,6 @@
             font-weight:bold;
             font-size:14px;
             letter-spacing:1px;
-            
         }
         #controls{width:100px;
                 height:200px;
@@ -54,11 +56,11 @@
     </style>
 </head>
 <body>
-<!--
-        <div id = "charts"></div>
--->
 <div id='map'></div>
-<div id="info"></div>
+<div id = "charts">
+    <div id="info"></div>
+    
+</div>
 <div id = "controls">
     <div class="sliderBar" id="minutesBar"></div>
 </div>

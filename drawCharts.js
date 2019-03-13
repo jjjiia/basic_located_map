@@ -1,5 +1,5 @@
 function lineChart(code, data){
-    console.log(data)
+    console.log(data,code)
     var w = 200
     var h = 100
     var svg = d3.select("#charts").append("svg").attr("width",w).attr("height",h)
