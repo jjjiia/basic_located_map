@@ -17,5 +17,5 @@ var keyModes = {"T001":{"calculate":"sum","title":"Total Population"},
 "T133":{"calculate":"sum","title":"Citizenship"},
 "T134":{"calculate":"sum","title":"Immigration"},
 "T139":{"calculate":"unique","title":"Place of Birth"},
-"C1600":{"calculate":"sum","title":"Household Language"}
+"C16001":{"calculate":"unique","title":"Household Language"}
 }

@@ -23,24 +23,48 @@ function formatByInterval(data){
     }
     //console.log(intervalData)
     showTotalPopulation(intervalData)
-    console.log(intervalData)
-    console.log(keyModes)
-    console.log(censusCodeToCategory)
     //for each interval
     //get group mode - make dictionary
     var groupedKeys = groupKeys(intervalData)
+    var outerInterval = intervals[intervals.length-1]
     //get all group data
-    for(var g in groupedKeys){
-        var keyMode = keyModes[g].calculate
-        var keys = groupedKeys[g]
-        if(keyMode == "sum"){
+    for(var k in keyModes){
+        var keyMode = keyModes[k].calculate
+        var keyTitle = keyModes[k].title
+        var keys = groupedKeys[k]
+        if(keyMode == "sum" && keyTitle !="Total Population"){
             var sums = sumsForGroup(intervalData,keys)
-            barChart(sums,g,"20")
+            barChart(sums,k,outerInterval)
+        }else if (keyMode == "unique"){
+            var uniques = getUnique(intervalData,keys)
+            var count = Object.keys(uniques).length
+            barChart(uniques,k,outerInterval)
+            
         }
     }
-    //draw within group 
-    //label with class
-    //add other interval lines
+}
+function getUnique(intervalData,keys){
+    var uniques = {}
+    for(var k in keys){
+        if(keys[k][0]=="S"){
+            var key = keys[k].replace("SE_","")
+            var totalKey = keys[k].split("_")[0]+"_"+keys[k].split("_")[1]+"_001"
+        }else{
+             var key = keys[k]
+            var totalKey = key.slice(0,key.length-3)+"001"
+        }
+        if(censusCodeToCategory[key]!=undefined){
+            uniques[keys[k]]={}
+            for(var i in intervalData){
+                var totalValue = getSum(intervalData[i],totalKey)
+                var sum = getSum(intervalData[i],keys[k])
+                var percent = Math.round(sum/totalValue*10000)/100
+                
+                uniques[keys[k]][i]={sum:sum, percent:percent}
+            }
+        }
+    }
+  return uniques
 }
 function groupKeys(intervalData){
     
@@ -51,8 +75,13 @@ function groupKeys(intervalData){
     var groupedKeys = {}
     for(var i in allKeys){
         var currentKey = allKeys[i]
-        if(currentKey.split("_")[0]=="SE"){
+        if(currentKey[0]=="S"){
             var currentKeyGroup = currentKey.split("_")[1]
+         }else if(currentKey[0]=="C"){
+            var currentKeyGroup = currentKey.slice(0,currentKey.length-3)
+         }else{
+            var currentKeyGroup = currentKey.split("_")[0]
+         }
             if(Object.keys(keyModes).indexOf(currentKeyGroup)>-1){
                 if(Object.keys(groupedKeys).indexOf(currentKeyGroup)==-1){
                     groupedKeys[currentKeyGroup]=[]
@@ -61,9 +90,7 @@ function groupKeys(intervalData){
                     groupedKeys[currentKeyGroup].push(currentKey)
                 }
             }
-        }
     }
-    
     return groupedKeys
 }
 function sumsForGroup(intervalData,keys){
@@ -71,6 +98,7 @@ function sumsForGroup(intervalData,keys){
     for(var k in keys){
         var key = keys[k]
         var totalKey = key.split("_")[0]+"_"+key.split("_")[1]+"_001"
+        
         if(key != totalKey){
             sums[key] = {}
             for(var i in intervalData){
@@ -124,15 +152,19 @@ function barChart(data,group,interval){
     var max = d3.max(Object.keys(data), function(d) {
         return +data[d][interval].percent;} );
     
-    var yScale = d3.scaleLinear().domain([0,max*1.3]).range([0,w-padding*4])
+    var yScale = d3.scaleLinear().domain([0,max*1.3]).range([2,w-padding*4])
     var oScale = d3.scaleLinear().domain([0,max*1.3]).range([0,1])
     
-    var svg = d3.select("#charts").append("div").attr("id",group).attr("class","barchart")
-    .append("svg").attr("width",w).attr("height",h)
+    var barChartDiv = d3.select("#charts").append("div").attr("id",group).attr("class","barchart")
+    
+    d3.select("#"+group).append("div").html(keyModes[group].title+" <span class=\"percentShow\">%</span> <span class=\"valueShow\">#</span>").attr("class","barTitle")
+        
+    
+    var svg = barChartDiv.append("svg").attr("width",w).attr("height",h)
     .attr("fill",waterColor)
 
     
-    svg.append("text").attr("class","chartTitle").text(keyModes[group].title).attr("x",padding).attr("y",padding)
+    //svg.append("text").attr("class","chartTitle").text(keyModes[group].title+" % #").attr("x",padding).attr("y",padding)
     svg.selectAll("."+group)
         .data(Object.keys(data).sort())
         .enter()
@@ -145,30 +177,38 @@ function barChart(data,group,interval){
             return yScale(data[d][interval].percent)
         })
         .attr("transform","translate("+padding+","+padding*2+")")
-        .attr("fill",waterColor)
+        .attr("fill",highlightColor)
         //.attr("opacity",function(d){
         //    return oScale(data[d][interval].percent)
         //})
         
-    svg.selectAll(".label_"+group)
+    svg.selectAll(".label_percent ."+group)
         .data(Object.keys(data).sort())
         .enter()
         .append("text")
-        .attr("class","label_value_"+group)
-        .attr("y",function(d,i){return i*barWidth+barWidth/2})
+        .attr("class","label_percent "+group)
+        .attr("y",function(d,i){return i*barWidth+barWidth/3})
         .attr("x",function(d,i){return yScale(data[d][interval].percent)+2})
         .attr("transform","translate("+padding+","+padding*2+")")
         .text(function(d,i){
            return data[d][interval].percent+"%"
         })
-        .attr("fill",waterColor)
-        .on("mouseover",function(d){
-            d3.select(this).text(data[d][interval].sum)
+        .attr("fill",mainColor)
+       
+    svg.selectAll(".label_value ."+group)
+        .data(Object.keys(data).sort())
+        .enter()
+        .append("text")
+        .attr("class","label_value "+group)
+        .attr("y",function(d,i){return i*barWidth+barWidth/3})
+        .attr("x",function(d,i){return yScale(data[d][interval].percent)+2})
+        .attr("transform","translate("+padding+","+padding*2+")")
+        .text(function(d,i){
+            return data[d][interval].sum
         })
-        .on("mouseout",function(d){
-            d3.select(this).text(data[d][interval].percent+"%")
-        })
-        
+        .attr("fill",mainColor)
+        .attr("opacity",0)
+          
     svg.selectAll(".label_"+group)
         .data(Object.keys(data).sort())
         .enter()
@@ -178,11 +218,27 @@ function barChart(data,group,interval){
         .attr("x",function(d,i){return 0})
         .attr("transform","translate("+padding+","+padding*2+")")
         .text(function(d,i){
-            var labelList = censusCodeToCategory[d.replace("SE_","")].split(": ")
+                var labelList = censusCodeToCategory[d.replace("SE_","")].split(": ")                
            return labelList[labelList.length-1]
         })
         .attr("fill",waterColor)
-        
+       
+    d3.selectAll(".percentShow")
+        .style("color",mainColor)
+        .on("click",function(){
+            d3.selectAll(".valueShow").style("color",waterColor)
+            d3.selectAll(".percentShow").style("color",mainColor)
+            d3.selectAll(".label_percent").attr("opacity",1)
+            d3.selectAll(".label_value").attr("opacity",0)
+        }) 
+    d3.selectAll(".valueShow")
+        .style("color",waterColor)
+        .on("click",function(){
+            d3.selectAll(".valueShow").style("color",mainColor)
+            d3.selectAll(".percentShow").style("color",waterColor)
+            d3.selectAll(".label_percent").attr("opacity",0)
+            d3.selectAll(".label_value").attr("opacity",1)
+        }) 
 }
 
 function circleChart(data,scale){

@@ -1,6 +1,7 @@
 var mainColor = "#EF382F"
 var minutesColor = "#EF382F"
 var waterColor = "#0067b2"
+var highlightColor = "#f4dc3e"
 var intervals = [5,10,20]
 var intervalMax = 60
 var transportMode = "walking"   
