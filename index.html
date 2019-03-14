@@ -13,7 +13,9 @@
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
     <script src="lib/FileSaver.js"></script>
-    <script src="lib/d3.v4.min.js"></script>
+    <!--<script src="lib/d3.v4.min.js"></script>-->
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+    
     <script src="lib/queue.v1.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
@@ -23,17 +25,19 @@
         color:#444;font-size:11px;}
         
         #map {position:absolute;
-            height:80%;
+            height:60%;
             width:100%;
             left:0px;
             top:0px;
             z-index:-5;}
-        #info{color:#0067B2; font-size:18px;line-height:125%;
-            
+        #info{color:#0067B2; 
+            font-size:18px;
+            line-height:125%;
+            width:80%;
             background-color:rgba(255,255,255,0.8);
             padding:20px;
         }
-        #charts{position:absolute;top:80%;overflow:auto;;}
+        #charts{position:absolute;top:60%;overflow:auto;;}
         .dataColumn{width:200px;display:inline-block;}
         .mode{color:#ffffff;
             padding:5px;
@@ -48,10 +52,18 @@
         }
         #controls{width:100px;
                 height:200px;
-                padding:0px;margin:0px;
+                padding:20px;margin:0px;
                 position: absolute;
                 left: 0px;
                 top: 0px;
+            }
+            .chartTitle{
+                font-size:16px;
+            }
+            .barchart{
+                display:inline-block;
+                float:top;
+                border-bottom:1px solid #EF382F;
             }
     </style>
 </head>
@@ -59,11 +71,12 @@
 <div id='map'></div>
 <div id = "charts">
     <div id="info"></div>
-    
 </div>
 <div id = "controls">
     <div class="sliderBar" id="minutesBar"></div>
 </div>
+<script src='keyGroups.js'></script>
+<script src='keys.js'></script>
 <script src='detectCensus.js'></script>
 <script src='drawCharts.js'></script>
 

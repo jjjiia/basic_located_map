@@ -1,4 +1,4 @@
-{"T001":"sum",
+{"T001":{"calculate":"sum"},
 "T002":"reaverage",
 "T004":"sum",
 "T007":"sum",

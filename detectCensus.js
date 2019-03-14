@@ -1,23 +1,21 @@
-
 var mainColor = "#EF382F"
 var minutesColor = "#EF382F"
-d3.queue()
-    //.defer(d3.csv, "R11901662_SL140.csv")
-    .defer(d3.json, "keys.json")
-    .defer(d3.json, "key_modes.json")
-    .await(ready);
-
-var intervals = [7,15,30]
+var waterColor = "#0067b2"
+var intervals = [5,10,20]
+var intervalMax = 60
 var transportMode = "walking"   
 var formattedKeys
 var keysInUse
 var geosByInterval = {}
-function ready(error, keys,keyModes){//censusData,keys) {	
+
+setup()
+
+function setup(error){//censusData,keys) {	
 	if (error) throw error;
         
-    formattedKeys = formatKeys(keys)
-    keysInUse = keyModes
-    
+  //  formattedKeys = formatKeys(keys)
+  //  keysInUse = keyModes
+  //  
     mapboxgl.accessToken = 'pk.eyJ1IjoiampqaWlhMTIzIiwiYSI6ImNpbDQ0Z2s1OTN1N3R1eWtzNTVrd29lMDIifQ.gSWjNbBSpIFzDXU2X5YCiQ';
 
     var map = new mapboxgl.Map({
@@ -51,6 +49,8 @@ function ready(error, keys,keyModes){//censusData,keys) {
         .html("walk")
         .on("click",function(){
             transportMode = "walking"
+            d3.select("#walking").style("opacity",1)
+            d3.select("#driving").style("opacity",.5)
             setUpEverything(map)
         })
         .attr("cursor","pointer")
@@ -59,11 +59,14 @@ function ready(error, keys,keyModes){//censusData,keys) {
         .attr("class","mode")
         .attr("id","driving")
         .html("drive")
-        .on("click",function(){
-            transportMode = "driving"
-            setUpEverything(map)
-        })
-        .attr("cursor","pointer")
+        .style("opacity",.5)
+      //  .on("click",function(){
+      //      d3.select("#walking").style("opacity",.7)
+      //      d3.select("#driving").style("opacity",1)
+      //      transportMode = "driving"
+      //      setUpEverything(map)
+      //  })
+      //.attr("cursor","pointer")
 
     })
     //var geoLocate=d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed")
@@ -100,21 +103,6 @@ function setUpEverything(map){
             map.removeSource(currentLayer)
         }
     }
-    
-    //for(var i in intervals){
-    //    try{
-    //        map.removeLayer("iso_"+intervals[i])
-    //        map.removeLayer("iso_label_"+intervals[i])
-    //        map.removeLayer("iso_outline_"+intervals[i])
-    //        map.removeLayer("iso_circle_"+intervals[i])
-    //        map.removeSource("iso_"+intervals[i])
-    //        map.removeSource("iso_label_"+intervals[i])
-    //        map.removeSource("iso_outline_"+intervals[i])
-    //        map.removeSource("iso_circle_"+intervals[i])
-    //    }
-    //    catch(err){
-    //    }
-    //}
     getIsochrone(map,intervals)        
 }  
 
@@ -128,7 +116,7 @@ function drawMinutesBar(map){
     var radius = barWidth*2
     var fontSize =15
     
-    var minuteScale = d3.scaleLinear().domain([radius,height-radius]).range([60,5])
+    var minuteScale = d3.scaleLinear().domain([radius,height-radius]).range([intervalMax,5])
     
     minuteBar
         .append("rect")
@@ -196,6 +184,7 @@ function drawMinutesBar(map){
         
         function dragged() {
           d3.select(".sliderCircle")
+            .style("opacity",.7)
             .attr("cy", function(){
                 var sliderPosition = getSliderPosition()
                 d3.select(".sliderCircleLabel")
@@ -208,7 +197,9 @@ function drawMinutesBar(map){
         }
 
         function dragended() {
-          d3.select(this).classed("active", false);
+            d3.select(this).classed("active", false)
+            d3.select(".sliderCircle").style("opacity",1)
+            d3.select(".sliderCircleLabel").attr("fill","#fff");
           var sliderPosition = getSliderPosition()
           var sliderMinutes = minuteScale(sliderPosition)
           
@@ -226,185 +217,8 @@ function zoomToBounds(map,intervals,result){
         return bounds.extend(coord);
     }, new mapboxgl.LngLatBounds(outerCoordinates[0], outerCoordinates[0]));
     map.fitBounds(bounds,{padding:40})
-}
-function formatKeys(keys){
-    var formattedKeys = {}
-    for(var k in keys){
-        var key = k
-        var value = keys[k]
-        if(key[0]=="T" && key.split("_").length ==2){
-            var group= key.split("_")[0]
-            if(Object.keys(formattedKeys).indexOf(group)>-1){
-                formattedKeys[group]["SE_"+key]=value
-            }else{
-                formattedKeys[group]={}
-                formattedKeys[group]["SE_"+key]=value
-            }
-        }else if(key[0]=="C"){
-            var group = key.slice(0,5)
-            if(Object.keys(formattedKeys).indexOf(group)>-1){
-                 formattedKeys[group][key]=value
-            }else{
-                formattedKeys[group]={}
-                 formattedKeys[group][key]=value
-            }
-        }
-    }
-    return formattedKeys
-}
-function formatByInterval(data){        
-    for(var i in geosByInterval){
-        var intervalData = {}
-        var geoids = geosByInterval[i]
-        for(var g in geoids){
-            var geoid = geoids[g].replace("00000","000")
-            intervalData[geoid]=data[geoid]
-        }
-        formatData(intervalData,i)
-    }
-    var formattedByCode = formatForCharts(geosByInterval)
-    drawCharts(formattedByCode)
-}
-function formatForCharts(data){
-    var formattedByCode = {}
-    for(var i in data){
-        var intervalData = data[i].data
-        for(k in intervalData){
-            var key = k
-            if(Object.keys(formattedByCode).indexOf(key)==-1){
-                formattedByCode[k]=[]
-                formattedByCode[k].push({interval:i, value:intervalData[k].value, percent:intervalData[k].percent,name:intervalData[k].name})
-            }else{
-                formattedByCode[k].push({interval:i, value:intervalData[k].value, percent:intervalData[k].percent,name:intervalData[k].name})
-            }
-        }
-    }
-    return formattedByCode
-}
-function drawCharts(data){
-    var populations = data["SE_T001_001"]
-    var displayText = ""
-    for(var p in populations){
-        if(p==0){
-            displayText+=populations[p]["value"]+" people live in the census tracts within a "+populations[p]["interval"]+" min "
-            +transportMode.replace("ing","")+" of here, "
-        }else if(p==populations.length-1){
-            displayText+=" and "+populations[p]["value"]+" within "+populations[p]["interval"]+" minutes."
-        }else{
-            displayText+=populations[p]["value"]+" within "+populations[p]["interval"]+" minutes, "
-        }
-    }
-    d3.select("#info").html(displayText)
-    
-    for(var i in data){
-        if(i.split("_")[2]!="001"){
-            lineChart(i, data[i])
-        }
-    }
-    
-}
-function lineChart(code, data){
-    var w = 200
-    var h = 100
-    var svg = d3.select("#charts").append("svg").attr("width",w).attr("height",h)
-    svg.append("text")
-    .text(
-        data[0].name
-        .replace("Employed Civilian Population 16 Years and Over: ","")
-        .replace("Total Population: ","")
-        .replace("Population 5 Years and Over: ","")
-    )
-    .attr("x",10).attr("y",20)
-    var line = d3.line()
-        .x(function(d,i){
-                return xScale(d.interval)
-            
-        })
-        .y(function(d,i){
-                return yScale(d.percent)
-        })
-            
-    var yScale = d3.scaleLinear()
-        .domain(d3.extent(data.map(function(item){
-            return item.percent
-        })))
-        .range([h-20,20])
-    var xScale = d3.scaleLinear().domain([0,data[data.length-1].interval]).range([0,w-20])
-            
-    svg.selectAll("circle")
-        .data(data)
-            .enter()
-            .append("circle")
-        .attr("class",code)
-            .attr("cx",function(d){
-                return xScale(d.interval)
-            })
-            .attr("cy",function(d){
-                return yScale(d.percent)
-            })
-            .attr("r",3)
-            .attr("fill",mainColor)
-            
-    svg.append("path")
-        .data([data])
-        .attr("d",line)
-        .attr("fill", "none")
-        .attr("stroke", mainColor)
-    
-    svg.selectAll(".labels")
-        .data(data)
-        .enter()
-        .append("text")
-        .text(function(d){
-            return d.percent
-        })
-        .attr("x",function(d){
-                return xScale(d.interval)-10
-            })
-        .attr("y",function(d){
-            if(yScale(d.percent)>h/2){
-                return yScale(d.percent)-5
-            }else{
-                return yScale(d.percent)+15
-            }
-        })
-}
-
-function formatData(data,interval){
-    d3.select("#data").append("div").attr("class","dataColumn").attr("id","ring_"+interval)
-    
-    var formatted = {}
-    
-    var displayStr = "<strong>"+interval+" minutes and "+Object.keys(data).length+" tracts</strong><br>"
-    
-    for(var group in keysInUse){
-        var mode = keysInUse[group]
-        if(mode == "sum"){
-            for(var key in formattedKeys[group]){
-                var keyName = formattedKeys[group][key]
-                var value = 0
-                for(var d in data){
-                   value += parseInt(data[d][key])
-                }
-                formatted[key]={"name":keyName,"value":value}
-            }
-           
-        }
-    }
-    for(var f in formatted){
-        //console.log(f)
-        if(f.slice(f.length-3,f.length)!="001"){
-            var total = formatted[f.slice(0,f.length-3)+"001"].value
-            var value = formatted[f].value
-            var percent = Math.round(value/total*10000)/100
-            var label = formatted[f].name.split(": ")
-            formatted[f]["percent"]=percent
-            displayStr=displayStr+ percent+"% "+ label[label.length-1]+"<br/>"
-        }
-    }
-    geosByInterval[interval]["data"]=formatted
-    d3.select("#ring_"+interval).html(displayStr)
-    return formatted
+                drawIsochrones(result,map,intervals)
+                getCensusGeo(result,map,intervals)
 }
 
 function getIsochrone(map,intervals){
@@ -417,12 +231,15 @@ function getIsochrone(map,intervals){
         type:"GET",
         success:function(result){
            // console.log(temp)
-            drawIsochrones(result,map,intervals)
-            getCensusGeo(result,map,intervals)
-            zoomToBounds(map,intervals,result)
+                zoomToBounds(map,intervals,result,function(){
+                    drawIsochrones(result,map,intervals,function(){
+                        getCensusGeo(result,map,intervals)
+                    })
+                })
         }
     })
 }
+
 function getCensusGeo(result, map,intervals){
     var censusGeos = []    
     geosByInterval = {}
@@ -446,40 +263,28 @@ function getCensusGeo(result, map,intervals){
     }
     var filter = ['in', 'AFFGEOID'].concat(geosByInterval[intervals[intervals.length-1]]);
     map.setFilter("tracts_highlight", filter);
- 
-//    var allGeos = []
-//    for(var j in geosByInterval){
-//        console.log(geosByInterval[j])
-//        allGeos=allGeos.concat(geosByInterval[j])
-//    }
-//    console.log(allGeos)
     getCensusFiles(geosByInterval[intervals[intervals.length-1]])
 }
 
 function getCensusFiles(geoids){
-    var q = queue();    
-        for( var i in geoids){
-            var filename = "census_by_geo/"+geoids[i].replace("00000","000")+".json"
-            q = q.defer(d3.json, filename);
-        }
-        q.await(onCensusLoaded);
+    var files = []
+    for(var g in geoids){
+        var fileName = "census_by_geo/"+geoids[g].replace("00000","000")+".json"
+        var fileObject = d3.json(fileName)
+        files.push(fileObject)
+    }
+   Promise.all(files)
+    .then(function(data){
+        onCensusLoaded(data)
+    })
+    //var q = queue();    
+    //    for( var i in geoids){
+    //        var filename = "census_by_geo/"+geoids[i].replace("00000","000")+".json"
+    //        q = q.defer(d3.json, filename);
+    //    }
+    //    q.await(onCensusLoaded);
     //.await(onCensusLoaded);
 }
-
-
-function onCensusLoaded(error){
- //   console.log(interval)
-    var censusData = {}
-    if(!error){
-        for(var i =1; i < arguments.length;i++){
-            var gid = arguments[i]["Geo_GEOID"]
-            censusData[gid]=arguments[i]
-        }
-            formatByInterval(censusData)
-        //formatData(censusData)
-    }    
-}
-
 
 function drawCenter(map){
     
@@ -558,7 +363,7 @@ function drawIsochrones(result,map,intervals){
             }
         })
         //https://docs.mapbox.com/mapbox-gl-js/example/geojson-markers/
-        var contourLabelCircle = [mainColor,"#ffffff","#ffffff"]
+        var contourLabelCircle = [mainColor,"#F7A9A9","#ffffff"]
         
         map.addLayer({
             "id":"iso_circle_"+result.features[l].properties.contour,
