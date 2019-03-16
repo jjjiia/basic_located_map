@@ -2,6 +2,7 @@
 <html>
 <head>
      <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <title>basic located</title>
@@ -13,11 +14,12 @@
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
     <script src="lib/FileSaver.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/jquery.serialize-object.js"></script>
     <!--<script src="lib/d3.v4.min.js"></script>-->
     <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
     
     <script src="lib/queue.v1.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
     <style>
         body { 
@@ -73,8 +75,10 @@
     </style>
 </head>
 <body>
+    
 <div id='map'></div>
 <div id = "charts">
+<div id='location'></div>
     <div id="info"></div>
 </div>
 <div id = "controls">
@@ -84,6 +88,7 @@
 <script src='keys.js'></script>
 <script src='detectCensus.js'></script>
 <script src='drawCharts.js'></script>
+<script src='both.js'></script>
 
 <script>
 

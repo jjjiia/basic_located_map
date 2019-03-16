@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <title>test</title>
+        
+        <script src="js/d3.js"></script>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/jquery.serialize-object.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        
+    </head>
+    <body>
+
+    <div id="title">       
+        collecting location data from user demo
+        <br/>
+        <br/>
+        I will erase this data after the class demo.
+        <br/>
+        <br/>
+        <br/>
+        below is your ip address and the location associated with it (no permission is needed to collect IP data)
+        <br/>
+       <div id="data"> </div>
+    
+        If you are here, your information is already being stored - you can see your data here:
+        <a href="https://docs.google.com/spreadsheets/d/1p9bAEkOyvbTCB2IjEze9xrRj6wineFXVY_40rXCXMZU/edit?usp=sharing" target="_blank">link to spreadsheet</a>
+        <br/>
+        
+        <br/>
+
+        <br/>
+        <a href="both.html">Click here to see browser location tracking - gps, wifi (signal strength)</a>
+        <br/>
+        High Accuracy! Needs Permission! Also stored!
+        <br/>
+        
+    </div>
+       
+       
+       <script type="text/javascript">
+     
+           function getLocation() {
+               var url = 'https://script.google.com/macros/s/AKfycbzNviIp8dQDEjgsyULnMB1rNZsdINdL-qWdR580aqGjet_yRgZ8/exec'
+
+                   var newDate = new Date();
+                   var entry = {time:newDate}
+               
+                   var getIp = $.getJSON('https://geoip-db.com/json/')
+                            .done (function(location) {
+                                entry["iplng"]=location.longitude
+                                entry["iplat"]=location.latitude
+                                entry["ip"]= location.IPv4
+                            
+                                var jqxhr = $.ajax({
+                                  url: url,
+                                  method: "GET",
+                                  dataType: "json",
+                                  data: entry
+                                }).success(
+                                    function(response){
+                                        d3.select("#rows").html(response.result+" at row "+ response.row)
+                                    }
+                                );
+                            
+                                var text = String(newDate)+"<br><br>"
+                                            +"ipLat: "+entry["iplat"]+"<br>"
+                                            +"ipLng: "+entry["iplng"]+"<br>"+"<br/>"
+                                            +"ip address: "+entry["ip"];
+                                d3.select("#data").html(text)
+                            });
+           }
+           
+           getLocation()
+ 
+       </script>      
+    </body>
+</html>

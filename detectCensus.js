@@ -61,13 +61,13 @@ function setup(error){//censusData,keys) {
         .attr("id","driving")
         .html("drive")
         .style("opacity",.5)
-      //  .on("click",function(){
-      //      d3.select("#walking").style("opacity",.7)
-      //      d3.select("#driving").style("opacity",1)
-      //      transportMode = "driving"
-      //      setUpEverything(map)
-      //  })
-      //.attr("cursor","pointer")
+        .on("click",function(){
+            d3.select("#walking").style("opacity",.7)
+            d3.select("#driving").style("opacity",1)
+            transportMode = "driving"
+            setUpEverything(map)
+        })
+      .attr("cursor","pointer")
 
     })
     //var geoLocate=d3.select(".mapboxgl-ctrl-geolocate").attr("aria-pressed")

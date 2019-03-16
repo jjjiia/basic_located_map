@@ -1,0 +1,20 @@
+body{
+    padding:20px;
+    background-color:#888;
+    color:#fff;
+    background-image: linear-gradient(-90deg, #607c44,#7fa349);
+    font-family:helvetica;    
+}
+#title{
+    font-size:14px;
+    color:#fff;
+}
+#data{
+    padding:25px;
+    font-size:24px;
+}
+#rows{
+    font-size:12px;
+    line-height:200%;
+}
+a{color:#fff;}
