@@ -147,7 +147,7 @@ function showTotalPopulation(intervalData){
 function barChart(data,group,interval){
     d3.select("#"+group).remove(0)
     var bars = Object.keys(data).length+1
-    var w = 400
+    var w = window.innerWidth/2-20
     var barWidth = 30
     var h = barWidth*bars
     var padding = 10
