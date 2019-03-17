@@ -30,8 +30,8 @@
                             );
                             
                             var text = String(time)+"Lat/Lng: " + position.coords.latitude +","+position.coords.longitude
-                                           
                             d3.select("#location").html(text)
+                            setup(position.coords.latitude,position.coords.longitude)
            }
            getLocation()
  

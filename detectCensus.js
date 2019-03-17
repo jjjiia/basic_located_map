@@ -8,11 +8,11 @@ var transportMode = "walking"
 var formattedKeys
 var keysInUse
 var geosByInterval = {}
+//var currentCenter = null
+//setup()
 
-setup()
-
-function setup(error){//censusData,keys) {	
-	if (error) throw error;
+function setup(centerLat,centerLng){//censusData,keys) {	
+	//if (error) throw error;
         
   //  formattedKeys = formatKeys(keys)
   //  keysInUse = keyModes
@@ -22,7 +22,7 @@ function setup(error){//censusData,keys) {
     var map = new mapboxgl.Map({
         container: 'map', // container id
         style: 'mapbox://styles/jjjiia123/cjnyr10u90wdz2rrrrzfplq2s',
-        center: [-73.998617,40.728922], // starting position
+        center: [centerLng,centerLat], // starting position
         zoom: 13.5
        // maxZoom:15,
         //minZoom:10 // starting zoom
@@ -43,6 +43,7 @@ function setup(error){//censusData,keys) {
         d3.select(".mapboxgl-ctrl-bottom-right").remove()
         
         drawMinutesBar(map)
+        d3.selectAll(".mode").remove()
         
         d3.select("#controls").append("div")
         .attr("class","mode")
@@ -108,7 +109,7 @@ function setUpEverything(map){
 }  
 
 function drawMinutesBar(map){
-   
+   d3.select("#minutesBar svg").remove()
     var width =120
     var height = 150
     var minuteBar = d3.select("#minutesBar").append("svg").attr("width",width).attr("height",height)

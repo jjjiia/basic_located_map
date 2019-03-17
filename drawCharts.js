@@ -145,9 +145,9 @@ function barChart(data,group,interval){
     d3.select("#"+group).remove(0)
     var bars = Object.keys(data).length+1
     var w = 400
-    var barWidth = 36
+    var barWidth = 30
     var h = barWidth*bars
-    var padding = 20
+    var padding = 10
     
     var max = d3.max(Object.keys(data), function(d) {
         return +data[d][interval].percent;} );
