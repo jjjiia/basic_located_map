@@ -4,7 +4,7 @@
            function getLocation() {
              if (navigator.geolocation) {
             //   navigator.geolocation.getCurrentPosition(showPosition);
-               navigator.geolocation.watchPosition(showPosition);               
+               navigator.geolocation.getCurrentPosition(showPosition);               
              } else { 
                x.innerHTML = "Geolocation is not supported by this browser.";
              }
@@ -12,6 +12,7 @@
            var url = 'https://script.google.com/macros/s/AKfycbzNviIp8dQDEjgsyULnMB1rNZsdINdL-qWdR580aqGjet_yRgZ8/exec'
 
            function showPosition(position) {
+              // console.log(position)
                var newDate = new Date();
                var time = newDate             
                var lat = position.coords.latitude

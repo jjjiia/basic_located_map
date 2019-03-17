@@ -37,6 +37,8 @@ function formatByInterval(data){
             barChart(sums,k,outerInterval)
         }else if (keyMode == "unique"){
             var uniques = getUnique(intervalData,keys)
+            var sums = sumsForGroup(intervalData,keys)
+           // console.log(keys)
             var count = Object.keys(uniques).length
             barChart(uniques,k,outerInterval)
             
@@ -53,7 +55,8 @@ function getUnique(intervalData,keys){
              var key = keys[k]
             var totalKey = key.slice(0,key.length-3)+"001"
         }
-        if(censusCodeToCategory[key]!=undefined){
+        //console.log(key, totalKey)
+        if(censusCodeToCategory[key]!=undefined && key != totalKey && censusCodeToCategory[key].split(":").length <3){
             uniques[keys[k]]={}
             for(var i in intervalData){
                 var totalValue = getSum(intervalData[i],totalKey)
